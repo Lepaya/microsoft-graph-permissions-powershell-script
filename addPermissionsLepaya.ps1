@@ -13,6 +13,7 @@ if ([string]::IsNullOrEmpty($resourceId)) {
     if (!$existingPermissions) {
         Throw “There are no existing Aplication permissions. Please provide resourceId for resource you want to assign permissions.”
     }
+    $resourceId = $existingPermissions[0].ResourceId
 }
 
 $permissions =@(
@@ -79,6 +80,13 @@ $permissions =@(
         ResourceId = $resourceId
         AppRoleId = "e12dae10-5a57-4817-b79d-dfbec5348930"
     }
+
+    # Application.Read.All
+    @{
+        PrincipalId = $servicePrincipalId
+        ResourceId = $resourceId
+        AppRoleId = "9a5d68dd-52b0-4cc2-bd40-abcf44ac3a30"
+    }
 )
 
 foreach ($permissionParams in $permissions)
@@ -100,7 +108,8 @@ foreach ($permissionParams in $permissions)
 
     if (!$hasPermission) {
         Write-Output "---------------------------------------------------------------"
-        Write-Output "Seting application permissions ID $permissionParams.AppRoleId ."
+        Write-Output "Seting application permission ID:"
+        Write-Output $permissionParams.AppRoleId
         Write-Output "---------------------------------------------------------------"
         New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $servicePrincipalId -BodyParameter $permissionParams | Format-List
     }
@@ -111,6 +120,3 @@ Write-Output "Application permissions:"
 Get-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $servicePrincipalId | Format-List -Property AppRoleId, ResourceDisplayName, PrincipalDisplayName
 Write-Output "Done."
 Write-Output "----------------------------------------------------------------"
-
-
-
