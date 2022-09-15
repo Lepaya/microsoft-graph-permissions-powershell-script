@@ -4,7 +4,8 @@ Simple scripts to add/remove permissions to Lepaya MS Teams App
 ## Usage:
 
 ### Add Permissions (without resourceId parameter)
- ```./addPermissionsLepaya.ps1 -servicePrincipalId {objectId}``` (Id for enterprise app we want to set permissions)
+ ```./addPermissionsLepaya.ps1 -servicePrincipalId {objectId}```\
+ Object ID (Service Principal ID) for enterprise app we want to set permissions
   
 ### Add Permissions (with resourceId parameter)
  ```./addPermissionsLepaya.ps1 -servicePrincipalId  {objectId} -resourceId {resourceId} ```\
