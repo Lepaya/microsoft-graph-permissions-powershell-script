@@ -1,7 +1,7 @@
 param ($servicePrincipalId, $resourceId)
 if(-not($servicePrincipalId)) { Throw “Value for -servicePrincipalId is required.” }
 
-Connect-Graph -Scopes "Application.ReadWrite.All"
+Connect-Graph -Scopes "AppRoleAssignment.ReadWrite.All"
 
 if ([string]::IsNullOrEmpty((Get-MgServicePrincipal -ServicePrincipalId $servicePrincipalId))) {
         Throw “ERROR: Service Principal with id: $servicePrincipalId does not exist. Make sure value of -servicePrincipalId is correct.”
