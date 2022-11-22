@@ -1,8 +1,17 @@
 # MS-Graph-Permissions-Powershell-Script
-Simple scripts to add/remove permissions to Lepaya MS Teams App
+Powershell scripts to add/remove permissions to Lepaya MS Teams App
+
+## Prerequisites
+- Powershell environment (version 7.3.0)
+- Powershell Module: Microsoft.Graph.Applications 1.17.0
+
+### To check if there’s the module
+```Get-InstalledModule Microsoft.Graph.Applications```
+
+### To install the module
+```Install-Module -Name Microsoft.Graph.Applications -RequiredVersion 1.17.0```
 
 ## Usage:
-
 ### Add Permissions (without resourceId parameter)
  ```./addPermissionsLepaya.ps1 -servicePrincipalId {objectId}```\
  Object ID (Service Principal ID) for enterprise app we want to set permissions
