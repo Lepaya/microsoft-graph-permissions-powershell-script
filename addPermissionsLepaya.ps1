@@ -1,7 +1,7 @@
 param ($servicePrincipalId, $resourceId)
 if(-not($servicePrincipalId)) { Throw “Value for -servicePrincipalId is required.” }
 
-Connect-Graph -Scopes "AppRoleAssignment.ReadWrite.All"
+Connect-Graph -Scopes "AppRoleAssignment.ReadWrite.All DelegatedPermissionGrant.ReadWrite.All Directory.AccessAsUser.All Directory.Read.All"
 
 if ([string]::IsNullOrEmpty((Get-MgServicePrincipal -ServicePrincipalId $servicePrincipalId))) {
         Throw “ERROR: Service Principal with id: $servicePrincipalId does not exist. Make sure value of -servicePrincipalId is correct.”
@@ -92,7 +92,10 @@ $permissions =@(
 foreach ($permissionParams in $permissions)
 {
     if (!$existingPermissions) {
-        New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $servicePrincipalId -BodyParameter $permissionParams | Format-List -Property AppRoleId
+        Write-Output "---------------------------------------------------------------"
+        Write-Output "Seting application permission..."
+        Write-Output "---------------------------------------------------------------"
+        New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $servicePrincipalId -BodyParameter $permissionParams | Format-List
         continue
     }
 
