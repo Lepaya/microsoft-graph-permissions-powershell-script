@@ -7,6 +7,7 @@ $msGraphApplicationsModule = Get-Module 'Microsoft.Graph.Applications' -List
 If (!$msGraphApplicationsModule) {
     Write-Output "Installing dependencies...."
     Install-Module 'Microsoft.Graph.Applications' -Force
+    Write-Output "Dependencies installed."
 }
 
 # Login
