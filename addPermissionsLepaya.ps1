@@ -1,12 +1,23 @@
 param ($servicePrincipalId, $resourceId)
 if(-not($servicePrincipalId)) { Throw “Value for -servicePrincipalId is required.” }
 
+# Check dependencies
+$msGraphApplicationsModule = Get-Module 'Microsoft.Graph.Applications' -List
+
+If (!$msGraphApplicationsModule) {
+    Write-Output "Installing dependencies...."
+    Install-Module 'Microsoft.Graph.Applications' -Force
+}
+
+# Login
 Connect-Graph -Scopes "AppRoleAssignment.ReadWrite.All DelegatedPermissionGrant.ReadWrite.All Directory.AccessAsUser.All Directory.Read.All"
 
+#Check service principal Id
 if ([string]::IsNullOrEmpty((Get-MgServicePrincipal -ServicePrincipalId $servicePrincipalId))) {
         Throw “ERROR: Service Principal with id: $servicePrincipalId does not exist. Make sure value of -servicePrincipalId is correct.”
 }
 
+# Get all existing permissions
 $existingPermissions = Get-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $servicePrincipalId
 
 if ([string]::IsNullOrEmpty($resourceId)) {
@@ -16,6 +27,7 @@ if ([string]::IsNullOrEmpty($resourceId)) {
     $resourceId = $existingPermissions[0].ResourceId
 }
 
+# List of required permissions for automatic onboarding
 $permissions =@(
 
     # GroupMember.Read.All
@@ -89,6 +101,7 @@ $permissions =@(
     }
 )
 
+# Assign missing permissions for automatic onboarding
 foreach ($permissionParams in $permissions)
 {
     if (!$existingPermissions) {
@@ -118,6 +131,7 @@ foreach ($permissionParams in $permissions)
     }
 }
 
+# Output application permission
 Write-Output "----------------------------------------------------------------"
 Write-Output "Application permissions:"
 Get-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $servicePrincipalId | Format-List -Property AppRoleId, ResourceDisplayName, PrincipalDisplayName
