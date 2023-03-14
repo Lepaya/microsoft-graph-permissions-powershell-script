@@ -11,9 +11,9 @@ If (!$msGraphApplicationsModule) {
 }
 
 # Login
-Connect-Graph -Scopes "AppRoleAssignment.ReadWrite.All DelegatedPermissionGrant.ReadWrite.All Directory.AccessAsUser.All Directory.Read.All"
+Connect-MgGraph -Scopes "Application.ReadWrite.All", "AppRoleAssignment.ReadWrite.All"
 
-#Check service principal Id
+# Check service principal Id
 if ([string]::IsNullOrEmpty((Get-MgServicePrincipal -ServicePrincipalId $servicePrincipalId))) {
         Throw “ERROR: Service Principal with id: $servicePrincipalId does not exist. Make sure value of -servicePrincipalId is correct.”
 }
@@ -27,8 +27,7 @@ if ([string]::IsNullOrEmpty($resourceId)) {
     }
     $resourceId = $existingPermissions[0].ResourceId
 }
-
-# List of required permissions for automatic onboarding
+# Full set of required permissions for automatic onboarding
 $permissions =@(
 
     # GroupMember.Read.All
@@ -102,39 +101,32 @@ $permissions =@(
     }
 )
 
-# Assign missing permissions for automatic onboarding
-foreach ($permissionParams in $permissions)
+# Assign full set of $permissions for automatic onboarding method
+
+# Set the $i counter variable to zero.
+$i = 0
+foreach ($permission in $permissions)
 {
-    if (!$existingPermissions) {
-        Write-Output "---------------------------------------------------------------"
-        Write-Output "Seting application permission..."
-        Write-Output "---------------------------------------------------------------"
-        New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $servicePrincipalId -BodyParameter $permissionParams | Format-List
-        continue
-    }
+    # Increment the $i counter variable which is used to create the progress bar.
+    $i = $i+1
+    # Determine the completion percentage
+    $Completed = ($i/$permissions.count) * 100
+    # Use Write-Progress to output a progress bar.
+    Write-Progress -Activity "Seting application permissions" -Status "Progress:" -PercentComplete $Completed
 
-    foreach ($existingPermission in $existingPermissions)
-    {
-        $hasPermission = $false
-        if ($existingPermission.AppRoleId -match $permissionParams.AppRoleId)
-        {
-            $hasPermission = $true
-            break
-        }
-    }
+    # Checks if the $permission exists in the service principal.
+    $hasPermission = $existingPermissions | Where-Object AppRoleId -eq $permission.AppRoleId
 
+    # Adds $permission to service principal if it does not exist.
     if (!$hasPermission) {
-        Write-Output "---------------------------------------------------------------"
-        Write-Output "Seting application permission ID:"
-        Write-Output $permissionParams.AppRoleId
-        Write-Output "---------------------------------------------------------------"
-        New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $servicePrincipalId -BodyParameter $permissionParams | Format-List
+        New-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $servicePrincipalId -BodyParameter $permission | Out-Null
     }
 }
 
-# Output application permission
+# Output granted application permission
+$grantedPermissions = Get-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $servicePrincipalId
 Write-Output "----------------------------------------------------------------"
-Write-Output "Application permissions:"
-Get-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $servicePrincipalId | Format-List -Property AppRoleId, ResourceDisplayName, PrincipalDisplayName
+Write-Output ($grantedPermissions[0].ResourceDisplayName + " " + "application permissions granted to" + " " +  $grantedPermissions[0].PrincipalDisplayName + ":")
+$grantedPermissions | Format-List -Property AppRoleId, CreatedDateTime
+Write-Output "----------------------------------------------------------------"
 Write-Output "Done."
-Write-Output "----------------------------------------------------------------"
